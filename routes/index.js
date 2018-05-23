@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-
+var Sequelize= require("sequelize");
+const{models}= require("../models");
 const quizController = require('../controllers/quiz');
 
 /* GET home page. */
@@ -13,6 +14,14 @@ router.get('/author', (req, res, next) => {
     res.render('author');
 });
 
+router.get('/quizzes', (req, res, next) =>{
+	models.quiz.findAll()
+	.then(quizzes=>{
+		res.render('quizzes',{quizzes});
+	})
+	.catch(error=>next(error));
+	
+});
 
 // Autoload for routes using :quizId
 router.param('quizId', quizController.load);
@@ -29,6 +38,7 @@ router.delete('/quizzes/:quizId(\\d+)',    quizController.destroy);
 
 router.get('/quizzes/:quizId(\\d+)/play',  quizController.play);
 router.get('/quizzes/:quizId(\\d+)/check', quizController.check);
-
+router.get('/quizzes/randomplay',         quizController.randomplay);
+router.get('/quizzes/randomcheck/:quizId(\\d+)', quizController.randomcheck);
 
 module.exports = router;

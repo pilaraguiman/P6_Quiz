@@ -137,8 +137,58 @@ exports.play = (req, res, next) => {
         answer
     });
 };
+exports.randomplay= (req, res, next) => {
 
+    var answer = req.query.answer || "";
 
+    req.session.score = req.session.score || 0;
+   
+    models.quiz.findAll()
+    .then(function(quiz){
+        req.session.quiz = req.session.quiz || quiz;
+        while(quiz === 0){
+            var posicion = Math.floor(Math.random()*req.session.quiz.length);
+            if(posicion === quizzes.length)
+                posicion--;
+            quiz = req.session.quizzes[posicion];
+        }
+        req.session.quiz[posicion] = 0;
+
+        res.render('quizzes/randomplay',{
+            quiz: quiz,
+            answer: answer,
+            score: req.session.score
+        });
+    }).catch(function(error){
+        next(error);
+    });
+};
+
+exports.randomcheck = function(req, res, next){
+
+    const answer = query.answer || "";
+    var quizzes= req.session.quiz;
+    const result = answer.toLowerCase().trim() === quiz.answer.toLowerCase().trim();
+    var score =req.session.score;
+    if(result){ 
+        req.session.score++;
+    }else{
+        var score=req.session.score;
+        req.session.score=0;
+    }
+    if(score===quizzes.length){
+        res.render('quizzes/random_nomore',{
+            score:score
+        });
+    }else{
+        res.render('quizzes/random_result',{
+            quiz: req.quiz,
+            result: result,
+            answer: answer,
+            score: score
+        });
+    }
+};
 // GET /quizzes/:quizId/check
 exports.check = (req, res, next) => {
 
