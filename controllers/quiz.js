@@ -169,9 +169,10 @@ exports.randomcheck = function(req, res, next){
     const answer = query.answer || "";
     var quizzes= req.session.quiz;
     const result = answer.toLowerCase().trim() === quiz.answer.toLowerCase().trim();
-    var score =req.session.score;
+    
     if(result){ 
         req.session.score++;
+        var score =req.session.score;
     }else{
         var score=req.session.score;
         req.session.score=0;
