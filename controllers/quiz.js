@@ -166,21 +166,34 @@ exports.randomplay= (req, res, next) => {
 
 exports.randomcheck = function(req, res, next){
 
-    const {quiz, query} = req;
+    var answer = req.query.answer || "";
 
-   const answer = query.answer || "";
-   const result = answer.toLowerCase().trim() === quiz.answer.toLowerCase().trim();
-   const score= req.session.randomPlay.length + result;
-   req.session.randomPlay.push(quiz.id);
+    var result = answer.toLowerCase().trim() === req.quiz.answer.toLowerCase().trim();
+    
+    var quizzes= req.session.quiz;
 
-   if(!result){
-     req.session.randomPlay=[];
-   }
-   res.render('quizzes/random_result',{
-     answer,
-     result,
-     score
-});
+    if (result) {
+        req.session.score++;
+        var score = req.session.score; 
+    }
+    else{
+        var score = req.session.score;
+        req.session.score=0;
+        //req.session.quiz = undefined;
+    }
+    if (score === quizzes.length){
+        res.render('quizzes/random_nomore', {
+           score: score
+        });
+    }
+    else {
+        res.render('quizzes/random_result', {
+           quiz: req.quiz,
+           result: result,
+           answer: answer,
+           score: score
+        });
+}
 };
 // GET /quizzes/:quizId/check
 exports.check = (req, res, next) => {
