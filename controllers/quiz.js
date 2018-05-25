@@ -139,37 +139,28 @@ exports.play = (req, res, next) => {
 };
 exports.randomplay= (req, res, next) => {
 
-    req.session.randomPlay = req.session.randomPlay || [];
-  const op = Sequelize.Op;
-  const whereOpt = {id: {[op.notIn]: req.session.randomPlay}};
+   var answer = req.query.answer || "";
 
-  models.quiz.count({where:whereOpt})
-  .then(count => {
-    if (count ===0){
-      const score= req.session.randomPlay.length;
-      req.session.randomPlay = [];
-      res.render('quizzes/random_nomore',{
-        score
-      });
-    }
-    return models.quiz.findAll({
-      where:whereOpt,
-      offset: Math.floor(count * Math.random()),
-      limit: 1
-    })
-    .then(quizzes => {
-      return quizzes[0];
-    });
-  })
-  .then(quiz => {
-    const score = req.session.randomPlay.length;
-    res.render('quizzes/random_play',{
-      quiz,
-      score
-    });
-  })
-  .catch(error => {
-    next(error);
+    req.session.score = req.session.score || 0;
+   
+    models.quiz.findAll()
+    .then(function(quiz){
+        req.session.quiz = req.session.quiz || quiz;
+        while(quiz === 0){
+            var posicion = Math.floor(Math.random()*req.session.quiz.length);
+            if(posicion === quizzes.length)
+                posicion--;
+            quiz = req.session.quizzes[posicion];
+        }
+        req.session.quiz[posicion] = 0;
+
+        res.render('quizzes/randomplay',{
+            quiz: quiz,
+            answer: answer,
+            score: req.session.score
+        });
+    }).catch(function(error){
+        next(error);
 });
 };
 
