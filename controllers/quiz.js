@@ -139,56 +139,57 @@ exports.play = (req, res, next) => {
 };
 exports.randomplay= (req, res, next) => {
 
-    var answer = req.query.answer || "";
+    req.session.randomPlay = req.session.randomPlay || [];
+  const op = Sequelize.Op;
+  const whereOpt = {id: {[op.notIn]: req.session.randomPlay}};
 
-    req.session.score = req.session.score || 0;
-   
-    models.quiz.findAll()
-    .then(function(quiz){
-        req.session.quiz = req.session.quiz || quiz;
-        while(quiz === 0){
-            var posicion = Math.floor(Math.random()*req.session.quiz.length);
-            if(posicion === quizzes.length)
-                posicion--;
-            quiz = req.session.quizzes[posicion];
-        }
-        req.session.quiz[posicion] = 0;
-
-        res.render('quizzes/randomplay',{
-            quiz: quiz,
-            answer: answer,
-            score: req.session.score
-        });
-    }).catch(function(error){
-        next(error);
+  models.quiz.count({where:whereOpt})
+  .then(count => {
+    if (count ===0){
+      const score= req.session.randomPlay.length;
+      req.session.randomPlay = [];
+      res.render('quizzes/random_nomore',{
+        score
+      });
+    }
+    return models.quiz.findAll({
+      where:whereOpt,
+      offset: Math.floor(count * Math.random()),
+      limit: 1
+    })
+    .then(quizzes => {
+      return quizzes[0];
     });
+  })
+  .then(quiz => {
+    const score = req.session.randomPlay.length;
+    res.render('quizzes/random_play',{
+      quiz,
+      score
+    });
+  })
+  .catch(error => {
+    next(error);
+});
 };
 
 exports.randomcheck = function(req, res, next){
 
-    const answer = query.answer || "";
-    var quizzes= req.session.quiz;
-    const result = answer.toLowerCase().trim() === quiz.answer.toLowerCase().trim();
-    
-    if(result){ 
-        req.session.score++;
-        var score =req.session.score;
-    }else{
-        var score=req.session.score;
-        req.session.score=0;
-    }
-    if(score===quizzes.length){
-        res.render('quizzes/random_nomore',{
-            score:score
-        });
-    }else{
-        res.render('quizzes/random_result',{
-            quiz: req.quiz,
-            result: result,
-            answer: answer,
-            score: score
-        });
-    }
+    const {quiz, query} = req;
+
+   const answer = query.answer || "";
+   const result = answer.toLowerCase().trim() === quiz.answer.toLowerCase().trim();
+   const score= req.session.randomPlay.length + result;
+   req.session.randomPlay.push(quiz.id);
+
+   if(!result){
+     req.session.randomPlay=[];
+   }
+   res.render('quizzes/random_result',{
+     answer,
+     result,
+     score
+});
 };
 // GET /quizzes/:quizId/check
 exports.check = (req, res, next) => {
