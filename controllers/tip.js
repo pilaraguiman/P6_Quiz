@@ -92,7 +92,7 @@ exports.destroy = (req, res, next) => {
 //Funcion que creamos para editar la pista
 exports.edit = (req, res, next) => {
 
-    const {tips, quiz} = req;
+    const {tip, quiz} = req;
 
     res.render('tips/edit', {tip,quiz});
 };
