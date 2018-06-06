@@ -1,0 +1,18 @@
+
+<h1>
+    Edit Tip:
+</h1>
+
+<form method="post" action="/quizzes/<%= quiz.id %>/tips/<%=tip.id%>?_method=PUT" >
+
+    <div class="wideRow">
+	<label for="text"  class="itemNarrow">Tip to edit:</label>
+	<input type="text" class="itemWide" id="text" name="text" value="<%= tip.text %>" placeholder="Write text of the new tip" autocomplete="off"/>
+	</div>
+
+	<br/>
+	<a href="/goback"><button type="button">Cancel</button></a>
+
+	<input type="submit" value="Save">
+
+</form>
